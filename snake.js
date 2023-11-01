@@ -29,16 +29,16 @@ export default class Snake extends THREE.Mesh {
         z: this.position.z,
       };
       this.history.push(pastPosition);
-      if (this.total === this.tail.length) {
-        for (let i = 0; i < this.total - 1; i++) {
-          this.tail[i] = this.tail[i + 1];
-        }
-      }
-      this.tail[this.total - 1] = new THREE.Vector3(
-        this.position.x,
-        this.position.y,
-        this.position.z
-      );
+      // if (this.total === this.tail.length) {
+      //   for (let i = 0; i < this.total - 1; i++) {
+      //     this.tail[i] = this.tail[i + 1];
+      //   }
+      // }
+      // this.tail[this.total - 1] = new THREE.Vector3(
+      //   this.position.x,
+      //   this.position.y,
+      //   this.position.z
+      // );
 
       this.position.x += this.xSpeed * 0.03;
       this.position.y += this.ySpeed * 0.03;
@@ -52,7 +52,6 @@ export default class Snake extends THREE.Mesh {
         y: Math.round(this.position.y),
         z: 0,
       };
-
       if (rounded.x === pos.x && rounded.y === pos.y) {
         this.total++;
         return true;
@@ -62,20 +61,19 @@ export default class Snake extends THREE.Mesh {
     };
 
     this.showTail = () => {
-      for (let i = 0; i < this.tail.length; i++) {
+      for (let i = 0; i < this.total; i++) {
         const segmentGeo = new THREE.BoxGeometry(0.5, 0.5, 0.5);
         const segmentMat = new THREE.MeshStandardMaterial({ color: 0x00ffff });
         const segmentMesh = new THREE.Mesh(segmentGeo, segmentMat);
-        segmentMesh.position.x = this.tail[i].x;
-        segmentMesh.position.y = this.tail[i].y;
-        setTimeout(() => {
-          scene.add(segmentMesh);
-        }, 200);
-        setTimeout(() => {
-          segmentGeo.dispose();
-          segmentMat.dispose();
-          scene.remove(segmentMesh);
-        }, 320);
+        segmentMesh.position.x = this.history[this.history.length - 20].x;
+        segmentMesh.position.y = this.history[this.history.length - 20].y;
+        scene.add(segmentMesh);
+
+        // setTimeout(() => {
+        //   segmentGeo.dispose();
+        //   segmentMat.dispose();
+        //   scene.remove(segmentMesh);
+        // }, 320);
       }
     };
 

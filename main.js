@@ -77,6 +77,7 @@ function animate() {
   snake.death();
   snake.update();
   snake.showTail();
+
   // for (let i = 0; i < snake.tail.length; i++) {
   //   const segmentGeo = new THREE.BoxGeometry(0.5, 0.5, 0.5);
   //   const segmentMat = new THREE.MeshStandardMaterial({ color: 0x00ffff });
