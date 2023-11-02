@@ -25,12 +25,12 @@ const renderer = new THREE.WebGLRenderer({
   antialias: true,
 });
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(0x333333, 1);
+renderer.setClearColor(0x222222, 1);
 
 document.body.appendChild(renderer.domElement);
 
 //LIGHTS
-const ambientLight = new THREE.AmbientLight(0xffffff, 2);
+const ambientLight = new THREE.AmbientLight(0xffffff, 1);
 scene.add(ambientLight);
 
 //CAMERA CONTROLS
