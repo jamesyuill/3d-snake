@@ -4,9 +4,12 @@ import Snake from './snake';
 import Food from './food';
 import { scene } from './scene';
 
-//SCENE & CAMERA
 let scl = 0.5;
+let food;
+let isGameOver = false;
+let foodHistory = [];
 
+//SCENE & CAMERA
 const camera = new THREE.PerspectiveCamera(
   50,
   window.innerWidth / window.innerHeight,
@@ -58,54 +61,80 @@ function checkKey(e) {
   }
 }
 
-let food;
-function pickLocation() {
-  let cols = Math.floor(5);
+function generateLocation() {
+  let cols = Math.floor(Math.random() * 12) - 5;
+  let rows = Math.floor(Math.random() * 12) - 5;
 
-  let rows = Math.floor(5);
-  food = new Food(
-    Math.floor(Math.random() * cols),
-    Math.floor(Math.random() * rows)
-  );
+  let newX = Math.floor(Math.random() * cols);
+  let newY = Math.floor(Math.random() * rows);
+  return { x: newX, y: newY };
+}
+
+// function isLocationUnique(array, newPos) {
+//   for (let i = 0; i < array.length; i++) {
+//     if (array[i].x === newPos.x && array[i].y === newPos.y) {
+//       return true;
+//     } else {
+//       return false;
+//     }
+//   }
+// }
+
+function createAndPlaceFood() {
+  let location = generateLocation();
+
+  console.log(foodHistory);
+  if (foodHistory.length >= 1) {
+    for (let i = 0; i < foodHistory.length; i++) {
+      if (foodHistory[i].x === location.x && foodHistory[i].y === location.y) {
+        console.log('same');
+        // createAndPlaceFood();
+      } else {
+        food = new Food(location.x, location.y);
+        scene.add(food);
+        return;
+      }
+    }
+  }
+  food = new Food(location.x, location.y);
   scene.add(food);
 }
 
-pickLocation();
-
+// function pickFood() {
+//   const newLocation = generateLocation();
+//   if (foodHistory.length > 0) {
+//     if (!isLocationUnique(foodHistory, newLocation)) {
+//       pickFood();
+//     } else {
+//       createAndPlaceFood(newLocation);
+//       foodHistory.push({ x: newLocation.x, y: newLocation.y });
+//     }
+//   }
+// }
+createAndPlaceFood();
 //ANIMATE
 function animate() {
-  snake.death();
   snake.update();
-  snake.showTail();
-
-  // for (let i = 0; i < snake.tail.length; i++) {
-  //   const segmentGeo = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-  //   const segmentMat = new THREE.MeshStandardMaterial({ color: 0x00ffff });
-  //   const segmentMesh = new THREE.Mesh(segmentGeo, segmentMat);
-  //   segmentMesh.position.x = snake.tail[i].x;
-  //   segmentMesh.position.y = snake.tail[i].y;
-  //   tailArray.push(segmentMesh);
-  //   scene.add(segmentMesh);
+  // if (snake.explode(snake.foodHistory)) {
+  //   isGameOver = true;
   // }
 
-  // setTimeout(() => {
-  //   tailArray.forEach((obj) => {
-  //     obj.geometry.dispose();
-  //     obj.material.dispose();
-  //     scene.remove(obj);
-  //   });
-  // }, 500);
-
-  if (snake.eat(food.position)) {
-    console.log('food eaten');
-    food.loseFood();
-    scene.remove(food);
-    pickLocation();
+  if (food) {
+    if (snake.eat(food.position)) {
+      foodHistory.push({ x: food.position.x, y: food.position.y });
+      console.log('food eaten');
+      food.loseFood();
+      scene.remove(food);
+      createAndPlaceFood();
+    }
   }
-  requestAnimationFrame(animate);
+
+  isGameOver ? null : requestAnimationFrame(animate);
+
   controls.update();
   renderer.render(scene, camera);
 }
+
 animate();
 
 //EVENT HANDLER
