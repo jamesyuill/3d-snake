@@ -4,9 +4,13 @@ import Snake from './snake';
 import Food from './food';
 import { scene } from './scene';
 
-//SCENE & CAMERA
 let scl = 0.5;
-
+let food;
+let isGameOver = false;
+let foodHistory = [];
+let location;
+const scoreDisplay = document.getElementById('scoreDisplay');
+//SCENE & CAMERA
 const camera = new THREE.PerspectiveCamera(
   50,
   window.innerWidth / window.innerHeight,
@@ -21,12 +25,12 @@ const renderer = new THREE.WebGLRenderer({
   antialias: true,
 });
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(0x333333, 1);
+renderer.setClearColor(0x222222, 1);
 
 document.body.appendChild(renderer.domElement);
 
 //LIGHTS
-const ambientLight = new THREE.AmbientLight(0xffffff, 2);
+const ambientLight = new THREE.AmbientLight(0xffffff, 1);
 scene.add(ambientLight);
 
 //CAMERA CONTROLS
@@ -34,6 +38,30 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.zoomSpeed = 7;
 controls.dynamicDampingFactor = 0.1;
 controls.update();
+
+//BOUNDING BOX
+
+function createSquare() {
+  const mat = new THREE.MeshMatcapMaterial();
+  const topGeo = new THREE.BoxGeometry(12.3, 0.3, 0.5);
+  const topMesh = new THREE.Mesh(topGeo, mat);
+  topMesh.position.y = 6;
+  const leftGeo = new THREE.BoxGeometry(0.3, 12, 0.5);
+  const leftMesh = new THREE.Mesh(leftGeo, mat);
+  leftMesh.position.x = -6;
+  const rightGeo = new THREE.BoxGeometry(0.3, 12, 0.5);
+  const rightMesh = new THREE.Mesh(rightGeo, mat);
+  rightMesh.position.x = 6;
+  const botGeo = new THREE.BoxGeometry(12.3, 0.3, 0.5);
+  const botMesh = new THREE.Mesh(botGeo, mat);
+  botMesh.position.y = -6;
+  const square = new THREE.Object3D();
+  square.add(topMesh, leftMesh, rightMesh, botMesh);
+  return square;
+}
+
+const square = createSquare();
+scene.add(square);
 
 //GEOMETRY
 const snake = new Snake(0, 0);
@@ -58,55 +86,61 @@ function checkKey(e) {
   }
 }
 
-let food;
-function pickLocation() {
-  let cols = Math.floor(5);
+function generateLocation() {
+  let cols = Math.floor(Math.random() * 12) - 5;
+  let rows = Math.floor(Math.random() * 12) - 5;
+  let newX = Math.floor(Math.random() * cols);
+  let newY = Math.floor(Math.random() * rows);
+  return { x: newX, y: newY };
+}
 
-  let rows = Math.floor(5);
-  food = new Food(
-    Math.floor(Math.random() * cols),
-    Math.floor(Math.random() * rows)
-  );
+function createAndPlaceFood() {
+  location = generateLocation();
+  food = new Food(location.x, location.y);
   scene.add(food);
 }
 
-pickLocation();
+function checkInBounds() {
+  if (
+    snake.position.x > 5.5 ||
+    snake.position.x < -5.5 ||
+    snake.position.y > 5.5 ||
+    snake.position.y < -5.5
+  ) {
+    isGameOver = true;
+  }
+}
+
+//SCORE DISPLAY
 
 //ANIMATE
 function animate() {
-  snake.death();
+  scoreDisplay.innerText = snake.total;
+  checkInBounds();
   snake.update();
-  snake.showTail();
-  // for (let i = 0; i < snake.tail.length; i++) {
-  //   const segmentGeo = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-  //   const segmentMat = new THREE.MeshStandardMaterial({ color: 0x00ffff });
-  //   const segmentMesh = new THREE.Mesh(segmentGeo, segmentMat);
-  //   segmentMesh.position.x = snake.tail[i].x;
-  //   segmentMesh.position.y = snake.tail[i].y;
-  //   tailArray.push(segmentMesh);
-  //   scene.add(segmentMesh);
+  snake.tail();
+  // if (snake.explode(snake.foodHistory)) {
+  //   isGameOver = true;
   // }
 
-  // setTimeout(() => {
-  //   tailArray.forEach((obj) => {
-  //     obj.geometry.dispose();
-  //     obj.material.dispose();
-  //     scene.remove(obj);
-  //   });
-  // }, 500);
+  if (food) {
+    if (snake.eat(food.position)) {
+      foodHistory.push({ x: food.position.x, y: food.position.y });
 
-  if (snake.eat(food.position)) {
-    console.log('food eaten');
-    food.loseFood();
-    scene.remove(food);
-    pickLocation();
+      food.loseFood();
+      scene.remove(food);
+      createAndPlaceFood();
+    }
   }
-  requestAnimationFrame(animate);
+
+  isGameOver ? null : requestAnimationFrame(animate);
+
   controls.update();
   renderer.render(scene, camera);
 }
-animate();
 
+animate();
+createAndPlaceFood();
 //EVENT HANDLER
 window.addEventListener('resize', onWindowResize, false);
 

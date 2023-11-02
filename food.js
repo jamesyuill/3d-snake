@@ -3,7 +3,7 @@ import * as THREE from 'three';
 export default class Food extends THREE.Mesh {
   constructor(posX, posY) {
     let geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-    let material = new THREE.MeshStandardMaterial();
+    let material = new THREE.MeshMatcapMaterial({ color: 0xffffff });
     super(geometry, material);
     this.material.color.set(0xffffff);
     this.name = 'food';
