@@ -8,7 +8,7 @@ let scl = 0.5;
 let food;
 let isGameOver = false;
 let foodHistory = [];
-
+let location;
 //SCENE & CAMERA
 const camera = new THREE.PerspectiveCamera(
   50,
@@ -64,57 +64,21 @@ function checkKey(e) {
 function generateLocation() {
   let cols = Math.floor(Math.random() * 12) - 5;
   let rows = Math.floor(Math.random() * 12) - 5;
-
   let newX = Math.floor(Math.random() * cols);
   let newY = Math.floor(Math.random() * rows);
   return { x: newX, y: newY };
 }
 
-// function isLocationUnique(array, newPos) {
-//   for (let i = 0; i < array.length; i++) {
-//     if (array[i].x === newPos.x && array[i].y === newPos.y) {
-//       return true;
-//     } else {
-//       return false;
-//     }
-//   }
-// }
-
 function createAndPlaceFood() {
-  let location = generateLocation();
-
-  console.log(foodHistory);
-  if (foodHistory.length >= 1) {
-    for (let i = 0; i < foodHistory.length; i++) {
-      if (foodHistory[i].x === location.x && foodHistory[i].y === location.y) {
-        console.log('same');
-        // createAndPlaceFood();
-      } else {
-        food = new Food(location.x, location.y);
-        scene.add(food);
-        return;
-      }
-    }
-  }
+  location = generateLocation();
   food = new Food(location.x, location.y);
   scene.add(food);
 }
 
-// function pickFood() {
-//   const newLocation = generateLocation();
-//   if (foodHistory.length > 0) {
-//     if (!isLocationUnique(foodHistory, newLocation)) {
-//       pickFood();
-//     } else {
-//       createAndPlaceFood(newLocation);
-//       foodHistory.push({ x: newLocation.x, y: newLocation.y });
-//     }
-//   }
-// }
-createAndPlaceFood();
 //ANIMATE
 function animate() {
   snake.update();
+  snake.tail();
   // if (snake.explode(snake.foodHistory)) {
   //   isGameOver = true;
   // }
@@ -122,7 +86,7 @@ function animate() {
   if (food) {
     if (snake.eat(food.position)) {
       foodHistory.push({ x: food.position.x, y: food.position.y });
-      console.log('food eaten');
+
       food.loseFood();
       scene.remove(food);
       createAndPlaceFood();
@@ -136,7 +100,7 @@ function animate() {
 }
 
 animate();
-
+createAndPlaceFood();
 //EVENT HANDLER
 window.addEventListener('resize', onWindowResize, false);
 

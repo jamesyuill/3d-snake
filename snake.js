@@ -5,7 +5,7 @@ import Bomb from './bomb';
 export default class Snake extends THREE.Mesh {
   constructor(posX, posY) {
     let geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-    let material = new THREE.MeshStandardMaterial();
+    let material = new THREE.MeshMatcapMaterial();
     super(geometry, material);
     this.material.color.set(0xffff00);
     this.name = 'snake';
@@ -15,7 +15,9 @@ export default class Snake extends THREE.Mesh {
     this.xSpeed = 1;
     this.ySpeed = 0;
     this.total = 0;
-
+    this.history = [];
+    this.bombs = [];
+    this.tailLength = 200;
     this.dir = (xdir, ydir) => {
       this.xSpeed = xdir;
       this.ySpeed = ydir;
@@ -24,6 +26,9 @@ export default class Snake extends THREE.Mesh {
     this.update = () => {
       this.position.x += this.xSpeed * 0.03;
       this.position.y += this.ySpeed * 0.03;
+      this.history.push(
+        new THREE.Vector3(this.position.x, this.position.y, this.position.z)
+      );
     };
 
     this.eat = (pos) => {
@@ -34,9 +39,11 @@ export default class Snake extends THREE.Mesh {
       };
       if (rounded.x === pos.x && rounded.y === pos.y) {
         this.total++;
-        setTimeout(() => {
-          this.dropBomb(pos.x, pos.y);
-        }, 1000);
+        this.tailLength += 200;
+        // setTimeout(() => {
+        //   this.dropBomb(pos.x, pos.y);
+        //   this.bombs.push({ x: pos.x, y: pos.y });
+        // }, 1000);
 
         return true;
       } else {
@@ -44,10 +51,25 @@ export default class Snake extends THREE.Mesh {
       }
     };
 
-    this.dropBomb = (posX, posY) => {
-      const bomb = new Bomb(posX, posY);
-      scene.add(bomb);
+    this.tail = () => {
+      for (let i = 0; i < this.total; i++) {
+        let geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+        let material = new THREE.MeshMatcapMaterial({ color: 0xffff00 });
+        let mesh = new THREE.Mesh(geometry, material);
+        mesh.position.x = this.history[this.history.length - 20].x;
+        mesh.position.y = this.history[this.history.length - 20].y;
+        scene.add(mesh);
+        setTimeout(() => {
+          geometry.dispose();
+          material.dispose();
+          scene.remove(mesh);
+        }, this.tailLength);
+      }
     };
+    // this.dropBomb = (posX, posY) => {
+    //   const bomb = new Bomb(posX, posY);
+    //   scene.add(bomb);
+    // };
 
     //   this.explode = (array) => {
     //     let rounded = {
