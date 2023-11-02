@@ -17,7 +17,7 @@ export default class Snake extends THREE.Mesh {
     this.total = 0;
     this.history = [];
     this.bombs = [];
-    this.tailLength = 200;
+    this.tailLength = 25;
     this.dir = (xdir, ydir) => {
       this.xSpeed = xdir;
       this.ySpeed = ydir;
@@ -29,6 +29,10 @@ export default class Snake extends THREE.Mesh {
       this.history.push(
         new THREE.Vector3(this.position.x, this.position.y, this.position.z)
       );
+
+      if (this.history.length > 500) {
+        this.history.shift();
+      }
     };
 
     this.eat = (pos) => {
@@ -39,7 +43,7 @@ export default class Snake extends THREE.Mesh {
       };
       if (rounded.x === pos.x && rounded.y === pos.y) {
         this.total++;
-        this.tailLength += 200;
+        this.tailLength += 100;
         // setTimeout(() => {
         //   this.dropBomb(pos.x, pos.y);
         //   this.bombs.push({ x: pos.x, y: pos.y });
